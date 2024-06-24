@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiper轮播图优化</title>
+    <!-- 引入Swiper CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
+    <style>
+        /* 设置header样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            /* overflow: hidden; */
+        }
+
+        /* 隐藏滚动条，但保留滚动功能 */
+        /* 隐藏滚动条，但保留滚动功能 */
+        body,
+        html {
+            overflow: auto;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+            /* 对于Chrome, Safari和Opera */
+        }
+
+        body {
+            -ms-overflow-style: none;
+            /* 对于Internet Explorer和Edge */
+        }
+
+        html {
+            scrollbar-width: none;
+            /* 对于Firefox */
+        }
+
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15vh;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+
+            z-index: 1000;
+            /* 确保header在轮播图之上 */
+            background-color: rgba(221, 252, 255, 0.586);
+            backdrop-filter: blur(5px);
+            box-shadow:
+                inset -2.5px -2.5px 7.5px rgba(255, 255, 255, 0.1),
+                2.5px 2.5px 7.5px rgba(0, 0, 0, 0.3),
+                -2.5px -2.5px 7.5px rgba(255, 255, 255, 0.1);
+
+        }
+
+        /* 轮播图样式 */
+        .swiper-container {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            /* 假设轮播图占据剩余的视图高度 */
+        }
+
+        .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            overflow: hidden;
+        }
+    </style>
+    <style>
+        .box {
+            position: absolute;
+            top: 25vh;
+            left: 65vh;
+            width: 600px;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .box .item {
+            border-radius: 20px;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--img);
+            background-size: cover;
+            transition: 1s;
+            box-shadow: 10px 20px 50px rgba(0, 0, 0, 0.25);
+        }
+
+        .box .item:nth-child(n-9) {
+            transform: translate3d(0, -100vw, 0);
+        }
+
+        .box .item:nth-child(10) {
+            transform: translate3d(-100px, -100px, 0) rotate(5deg);
+        }
+
+        .box .item:nth-child(11) {
+            transform: translate3d(-50px, -50px, 0) rotate(-15deg);
+        }
+
+        .box .item:nth-child(12) {
+            transform: translate3d(0px, 0px, 0) rotate(15deg);
+        }
+
+        .box .item:nth-child(13) {
+            transform: translate3d(50px, 50px, 0) rotate(-5deg);
+        }
+
+        .box .item:nth-child(n+14) {
+            transform: translate3d(0, 100vw, 0);
+        }
+
+        .box .item::before {
+            content: attr(data-text);
+            position: absolute;
+            color: #fff;
+            font-size: 5em;
+            transition: 1s;
+            font-weight: 800;
+            white-space: nowrap;
+            text-transform: uppercase;
+            -webkit-text-stroke: 2px #000;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.75);
+            transform: translate3d(-50vw, 50vh, 0) rotate(0);
+            opacity: 0;
+        }
+
+        .box .item:nth-child(13)::before {
+            transform: translate3d(-150px, 250px, 0) rotate(5deg);
+            opacity: 1;
+        }
+
+        .tb {
+            background-color: rgba(221, 252, 255, 0.586);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            top: -42vh;
+            width: 200vh;
+            height: 18vh;
+            box-shadow:
+                inset -2.5px -2.5px 7.5px rgba(255, 255, 255, 0.1),
+                2.5px 2.5px 7.5px rgba(0, 0, 0, 0.3),
+                -2.5px -2.5px 7.5px rgba(255, 255, 255, 0.1);
+        }
+
+        .tb ul {
+            display: flex;
+            /* flex-direction: column; */
+        }
+
+        .tb ul li {
+            margin-left: 90px;
+
+        }
+
+        .tx {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            left: -50vh;
+        }
+
+        .cd {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            left: 50vh;
+        }
+
+        .tx span {
+            display: block;
+            position: relative;
+            left: 1.08vh;
+            top: 1vh;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- header部分 -->
+    <header>
+        <div class="nav-item" data-index="0">~~~</div>
+        <div class="nav-item" data-index="1">原神</div>
+        <div class="nav-item" data-index="2">~~~</div>
+    </header>
+
+    <!-- 轮播图部分 -->
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide" style="background-color: #3498db;">Slide 1</div>
+            <div class="swiper-slide" style="background-color: #2ecc71;">
+                <div>
+                    <div class="box">
+                        <div class="item" style="--img:url('img/3.401.jpg')" data-text="『磬弦奏华夜』"></div>
+                        <div class="item" style="--img:url('img/3.501.jpg')" data-text="『风花的呼吸』"></div>
+                        <div class="item" style="--img:url('img/3.601.jpg')" data-text="『盛典与慧业』"></div>
+                        <div class="item" style="--img:url('img/3.701.jpg')" data-text="『决斗！召唤之巅！』"></div>
+                        <div class="item" style="--img:url('img/3.801.jpg')" data-text="『清夏！乐园？大秘境！』"></div>
+
+                        <div class="item" style="--img:url('img/4.001.jpg')" data-text="『仿若无因飘落的轻雨』"></div>
+                        <div class="item" style="--img:url('img/4.101.jpg')" data-text="『向深水中的晨星』"></div>
+                        <div class="item" style="--img:url('img/4.201.jpg')" data-text="『罪人舞步旋』"></div>
+                        <div class="item" style="--img:url('img/4.301.jpg')" data-text="『蔷薇与铳枪』"></div>
+                        <div class="item" style="--img:url('img/4.401.jpg')" data-text="『彩鹞栉春风』"></div>
+                        <div class="item" style="--img:url('img/4.501.jpg')" data-text="『铓锋锦间裁』"></div>
+                        <div class="item" style="--img:url('img/4.601.jpg')" data-text="『两界为火，赤夜将熄』"></div>
+                        <!-- ===================================================================== -->
+                        <div class="item" style="--img:url('img/4.701.jpg')" data-text="『纺坠终久之梦』"></div>
+
+                        <div class="item" style="--img:url('img/1.001.jpg')" data-text="『捕风的异乡人』"></div>
+                        <div class="item" style="--img:url('img/1.101.jpg')" data-text="『迫近的客星』"></div>
+                        <div class="item" style="--img:url('img/1.201.jpg')" data-text="『白垩与黑龙』"></div>
+                        <div class="item" style="--img:url('img/1.301.jpg')" data-text="『明霄升海平』"></div>
+                        <div class="item" style="--img:url('img/1.401.jpg')" data-text="『风花的邀约』"></div>
+                        <div class="item" style="--img:url('img/1.501.jpg')" data-text="『玉扉绕尘歌』"></div>
+                        <div class="item" style="--img:url('img/1.601.jpg')" data-text="『盛夏！海岛？大冒险！』"></div>
+
+                        <div class="item" style="--img:url('img/2.001.jpg')" data-text="『不动鸣神，泡影断灭』"></div>
+                        <div class="item" style="--img:url('img/2.101.jpg')" data-text="『韶光抚月，天下人间』"></div>
+                        <div class="item" style="--img:url('img/2.201.jpg')" data-text="『雾海悬谜境』"></div>
+                        <div class="item" style="--img:url('img/2.301.jpg')" data-text="『皑尘与雪影』"></div>
+                        <div class="item" style="--img:url('img/2.401.jpg')" data-text="『飞彩镌流年』"></div>
+                        <div class="item" style="--img:url('img/2.501.jpg')" data-text="『薄樱初绽时』"></div>
+                        <div class="item" style="--img:url('img/2.601.jpg')" data-text="『流风眷堇庭』"></div>
+                        <div class="item" style="--img:url('img/2.701.jpg')" data-text="『荒梦藏虞渊』"></div>
+                        <div class="item" style="--img:url('img/2.801.jpg')" data-text="『仲夏！幻夜？奇想曲！』"></div>
+
+                        <div class="item" style="--img:url('img/3.001.jpg')" data-text="『千朵玫瑰带来的黎明』"></div>
+                        <div class="item" style="--img:url('img/3.101.jpg')" data-text="『赤土之王与三朝圣者』"></div>
+                        <div class="item" style="--img:url('img/3.201.jpg')" data-text="『虚空鼓动，劫火高扬』"></div>
+                        <div class="item" style="--img:url('img/3.301.jpg')" data-text="『六入尽明，诸相皆无』"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide" style="background-color: #e74c3c;">Slide 3</div>
+        </div>
+        <!-- 如果需要导航按钮 -->
+        <!-- <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div> -->
+    </div>
+
+    <!-- 引入Swiper JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script>
+        // 初始化Swiper
+        var mySwiper = new Swiper('.swiper-container', {
+            direction: 'horizontal', // 水平切换选项
+            loop: true, // 循环模式选项
+
+            // 如果需要前进后退按钮
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        // 为每个导航项添加点击事件
+        document.querySelectorAll('.nav-item').forEach(function (navItem) {
+            navItem.addEventListener('click', function () {
+                var index = this.getAttribute('data-index');
+                mySwiper.slideTo(index, 500); // 跳转到对应轮播图，动画时长500ms
+            });
+        });
+    </script>
+    <script>
+        let box = document.querySelector('.box');
+        function moveNext() {
+            let item = document.querySelectorAll('.item');
+            box.appendChild(item[0]);
+        }
+        function movePrev() {
+            let item = document.querySelectorAll('.item');
+            box.prepend(item[item.length - 1]);
+        }
+        window.addEventListener('wheel', function (event) {
+            if (event.deltaY > 0) {
+                moveNext();
+            }
+            else {
+                movePrev()
+            }
+        })
+    </script>
+</body>
+
+</html>
